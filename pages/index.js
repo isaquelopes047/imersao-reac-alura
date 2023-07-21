@@ -1,15 +1,15 @@
+import React from 'react';
 import config from "../config.json";
 import styled from "styled-components";
 import { CSSReset } from "../src/components/CSSReset";
 import Menu from "../src/components/Menu";
 import { StyledTimeline } from "../src/components/Timeline";
 
-function HomePage() {
-    const estilosDaHomePage = {
-        // backgroundColor: "red" 
-    };
+import Banner from "../src/components/Banner";
 
-    // console.log(config.playlists);
+function HomePage() {
+   
+    const [valorDoFiltro, setValorDoFiltro] = React.useState("");
 
     return (
         <>
@@ -18,11 +18,11 @@ function HomePage() {
                 display: "flex",
                 flexDirection: "column",
                 flex: 1,
-                // backgroundColor: "red",
             }}>
-                <Menu />
+                <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro}/>
+                <Banner />
                 <Header />
-                <Timeline playlists={config.playlists}>
+                <Timeline searchValue={valorDoFiltro} playlists={config.playlists}>
                     Conteúdo
                 </Timeline>
             </div>
@@ -48,7 +48,7 @@ const StyledHeader = styled.div`
         border-radius: 50%;
     }
     .user-info {
-        margin-top: 50px;
+        margin-top: 10px;
         display: flex;
         align-items: center;
         width: 100%;
@@ -57,7 +57,7 @@ const StyledHeader = styled.div`
     }
 `;
 function Header() {
-    return (
+    return ( 
         <StyledHeader>
             {/* <img src="banner" /> */}
             <section className="user-info">
@@ -75,35 +75,34 @@ function Header() {
     )
 }
 
-function Timeline(propriedades) {
-    // console.log("Dentro do componente", propriedades.playlists);
+function Timeline({searchValue, ...propriedades}) {
     const playlistNames = Object.keys(propriedades.playlists);
-    // Statement
-    // Retorno por expressão
+  
     return (
-        <StyledTimeline>
-            {playlistNames.map((playlistName) => {
-                const videos = propriedades.playlists[playlistName];
-                console.log(playlistName);
-                console.log(videos);
-                return (
-                    <section>
-                        <h2>{playlistName}</h2>
-                        <div>
-                            {videos.map((video, key) => {
-                                return (
-                                    <a href={video.url} key={key}>
-                                        <img src={video.thumb} />
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
-                                )
-                            })}
-                        </div>
-                    </section>
-                )
-            })}
-        </StyledTimeline>
-    )
-}
+      <StyledTimeline>
+        {playlistNames.map((playlistName, index) => { // Adicione o parâmetro "index" aqui
+          const videos = propriedades.playlists[playlistName];
+  
+          return (
+            <section key={index}> {/* Use o "index" como a chave */}
+              <h2>{playlistName}</h2>
+              <div>
+                {videos
+                    .filter((video) => {
+                        const titleNormalized = video.title.toLowerCase();
+                        const searchValueNormalized = searchValue.toLowerCase();
+                        return titleNormalized.includes(searchValueNormalized)
+                })
+                .map((video, key) => ( 
+                  <a href={video.url} key={key}>
+                    <img src={video.thumb} />
+                    <span>{video.title}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </StyledTimeline>
+    );
+  }
